@@ -37,7 +37,7 @@ public class HetuController {
 
 		// Lasketaan hetu saaduista parametreistä
 		@RequestMapping(value = "/laske", method = RequestMethod.POST)
-		public String getHetu(@RequestParam("paiva") int paiva,@RequestParam("kuukausi") int kuukausi,@RequestParam("vuosi") int vuosi) {
+		public String getHetu(@RequestParam("paiva") String paiva,@RequestParam("kuukausi") String kuukausi,@RequestParam("vuosi") String vuosi) {
 			
 			Map<Integer, String> hetuMap = new HashMap<>();
 			hetuMap.put(0, "0");
