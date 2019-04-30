@@ -1,36 +1,23 @@
 package com.hetu.controller;
-import java.io.IOException;
-import org.springframework.security.crypto.password.StandardPasswordEncoder;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.Scanner;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-
 import com.hetu.util.HetuKryptaaja;
-
 
 @Controller
 @RequestMapping(value = "/")
 public class HetuController {
+	 private static String LopullinenHetu;
 	
-	 //muuttujat
-	 String LopullinenHetu=null;
-	 String crypted=null;
-	
-	  //Kysytään hetua käyttäjältä
+	  // Kysytään hetua käyttäjältä
 		@RequestMapping(value = "/", method = RequestMethod.GET)
-		public String sentHetu(Model model) throws IOException {
-			
+		public String sendHetu(Model model) {
 			model.addAttribute("LopullinenHetu", LopullinenHetu);
 			return "index";
 		}
@@ -72,39 +59,31 @@ public class HetuController {
 			hetuMap.put(29, "X");
 			hetuMap.put(30, "Y");
 			
-			//laskee viimeisen merkin
-			String hetu = new StringBuilder().append(paiva).append(kuukausi).append(vuosi).toString();
-			
+			// Laskee viimeisen merkin
 			Random rn = new Random();
-			Integer hetuNumero = rn.nextInt(899 - 002 + 1) + 002;
-			Integer hetuNumeroJaettu=hetuNumero%31;
+			String hetuNumero = String.valueOf(rn.nextInt(899 - 2));
 
-			String hetuConvert=new StringBuilder().append(hetu).append("-").append(hetuNumero).toString();
-			String viimeinenMerkki=null;			
-			if(hetuMap.containsKey(hetuNumeroJaettu)) {
-				
-				for (Map.Entry<Integer, String> entry : hetuMap.entrySet()) {
-
-					if(entry.getKey().equals(hetuNumeroJaettu)) {
-						viimeinenMerkki=entry.getValue();
-						LopullinenHetu=new StringBuilder().append(hetuConvert).append(viimeinenMerkki).toString();
-	
-						//Kryptattu hetu
-						HetuKryptaaja sk = new HetuKryptaaja();
-						crypted=sk.crypted(LopullinenHetu);
-
-					}
-
-				}
-				
+			// Lisätään etunollat hetuNumeron eteen riippuen sen nykyisestä arvosta
+			if (Integer.valueOf(hetuNumero) < 10) {
+				hetuNumero = "00".concat(hetuNumero);
+			} else if (Integer.valueOf(hetuNumero) >= 10 && Integer.valueOf(hetuNumero) < 100) {
+				hetuNumero = "0".concat(hetuNumero);
 			}
 
-			
+			final String hetu = new StringBuilder().append(paiva).append(kuukausi).append(vuosi).toString();
+			final Integer hetuNumeroJaettu = Integer.valueOf(hetu.concat(hetuNumero))%31;
+			final String hetuConvert=new StringBuilder().append(hetu).append("-").append(hetuNumero).toString();
+
+			// Hakee mapista viimeisen merkin hetulle
+			LopullinenHetu = new StringBuilder().append(hetuConvert).append(hetuMap.get(hetuNumeroJaettu)).toString();
+
+			// Kryptattu hetu
+			HetuKryptaaja sk = new HetuKryptaaja();
+			final String crypted=sk.crypted(LopullinenHetu);
+
 			System.out.println("generoitu hetusi on: "+LopullinenHetu);
 			System.out.println("generoitu hetusi on: "+crypted);	
 		  
 			return "redirect:/";
 		}
-	
-
 }
